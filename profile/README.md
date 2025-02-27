@@ -6,6 +6,8 @@ TSU Spring არის ორგანიზაციული ანგარ�
 
 ## საგნის თემები (14 კვირაზე განაწილებული):
 1. შესავალი Spring-სა და Spring Boot-ში
+   * [Static Website](https://github.com/tsu-spring/examples/tree/main/1.%20Building%20Static%20Websites/static-website)
+   * [Static Website (using Bootstrap CSS)](https://github.com/tsu-spring/examples/tree/main/1.%20Building%20Static%20Websites/bootstrap-website)
 2. Spring Boot-ის ბაზისები (ApplicationContext, IoC/DI, Auto-Configuration)
 3. დინამიური ვებ აპლიკაციების აწყობა (Spring MVC-ით)
 4. მონაცემთა ბაზასთან მუშაობა Spring-ში (Spring Data JPA-ით)
@@ -13,7 +15,7 @@ TSU Spring არის ორგანიზაციული ანგარ�
 6. ვებ აპლიკაციის უსაფრთხოება (Spring Security-ით)
 7. ვებ აპლიკაციის ინტერნაციონალიზაცია/ლოკალიზაცია
 8. კონფიგურაციის გზები Spring Boot აპლიკაციებში
-9. ლოგირების მექანიზმი Spring Boot-ში
+9.  ლოგირების მექანიზმი Spring Boot-ში
 10. ვებ აპლიკაციის ტესტირება
 11. ვებ აპლიკაციის მონიტორინგი (Spring Boot Actuator-ით)
 12. მესიჯინგი და ასინქრონული დამუშავება
