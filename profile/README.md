@@ -9,15 +9,16 @@ TSU Spring არის ორგანიზაციული ანგარ�
    * [Static Website](https://github.com/tsu-spring/examples/tree/main/1.%20Building%20Static%20Websites/static-website)
    * [Static Website (using Bootstrap CSS)](https://github.com/tsu-spring/examples/tree/main/1.%20Building%20Static%20Websites/bootstrap-website)
 2. Spring Boot-ის ბაზისები (ApplicationContext, IoC/DI, Auto-Configuration)
-3. დინამიური ვებ აპლიკაციების აწყობა (Spring MVC-ით)
-4. მონაცემთა ბაზასთან მუშაობა Spring-ში (Spring Data JPA-ით)
-5. RESTful ვებ სერვისების აწყობა
-6. ვებ აპლიკაციის უსაფრთხოება (Spring Security-ით)
-7. ვებ აპლიკაციის ინტერნაციონალიზაცია/ლოკალიზაცია
-8. კონფიგურაციის გზები Spring Boot აპლიკაციებში
-9.  ლოგირების მექანიზმი Spring Boot-ში
-10. ვებ აპლიკაციის ტესტირება
-11. ვებ აპლიკაციის მონიტორინგი (Spring Boot Actuator-ით)
-12. მესიჯინგი და ასინქრონული დამუშავება
-13. მიკროსერვისული არქიტექტურა Spring Boot-ით
-14. Spring Boot აპლიკაციის გაშვება სხვადასხვა გარემოში
+   * [Dynamic Website](https://github.com/tsu-spring/examples/tree/main/2.%20Building%20Dynamic%20Websites/dynamic-website)
+4. დინამიური ვებ აპლიკაციების აწყობა (Spring MVC-ით)
+5. მონაცემთა ბაზასთან მუშაობა Spring-ში (Spring Data JPA-ით)
+6. RESTful ვებ სერვისების აწყობა
+7. ვებ აპლიკაციის უსაფრთხოება (Spring Security-ით)
+8. ვებ აპლიკაციის ინტერნაციონალიზაცია/ლოკალიზაცია
+9. კონფიგურაციის გზები Spring Boot აპლიკაციებში
+10.  ლოგირების მექანიზმი Spring Boot-ში
+11. ვებ აპლიკაციის ტესტირება
+12. ვებ აპლიკაციის მონიტორინგი (Spring Boot Actuator-ით)
+13. მესიჯინგი და ასინქრონული დამუშავება
+14. მიკროსერვისული არქიტექტურა Spring Boot-ით
+15. Spring Boot აპლიკაციის გაშვება სხვადასხვა გარემოში
