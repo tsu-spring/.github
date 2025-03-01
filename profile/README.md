@@ -10,7 +10,7 @@ TSU Spring არის ორგანიზაციული ანგარ�
    * [Static Website (using Bootstrap CSS)](https://github.com/tsu-spring/examples/tree/main/1.%20Building%20Static%20Websites/bootstrap-website)
 2. **დინამიური ვებსაიტების აწყობა** (Spring Boot-ის ბაზისები, ApplicationContext, IoC/DI, Auto-Configuration)
    * [Dynamic Website (Bookem All)](https://github.com/tsu-spring/examples/tree/main/2.%20Building%20Dynamic%20Websites/dynamic-website)
-3. **ინტერაქტიული ვებ აპლიკაციების აწყობა** (HTML ფორმები, ფაილების ატვირთვა)
+3. **ინტერაქტიული ვებ აპლიკაციების აწყობა** (HTML ფორმები, ფორმების ვალიდაცია, ფაილების ატვირთვა)
 4. მონაცემთა ბაზასთან მუშაობა Spring-ში (Spring Data JPA-ით)
 5. RESTful ვებ სერვისების აწყობა
 6. ვებ აპლიკაციის უსაფრთხოება (Spring Security-ით)
