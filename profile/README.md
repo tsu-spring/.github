@@ -13,6 +13,7 @@ TSU Spring არის ორგანიზაციული ანგარ�
 3. **ინტერაქტიული ვებ აპლიკაციების აწყობა** (HTML ფორმები, ფორმების ვალიდაცია, ფაილების ატვირთვა)
    * [Interactive Web Application (Albumer)](https://github.com/tsu-spring/examples/tree/main/3.%20Building%20Interactive%20Web%20Applications/interactive-website)
 4. მონაცემთა ბაზასთან მუშაობა Spring-ში (Spring Data JPA-ით)
+   * [Working with Databases](https://github.com/tsu-spring/examples/tree/main/4.%20Working%20with%20Databases/website-with-database)
 5. RESTful ვებ სერვისების აწყობა
 6. ვებ აპლიკაციის უსაფრთხოება (Spring Security-ით)
 7. ვებ აპლიკაციის ინტერნაციონალიზაცია/ლოკალიზაცია
