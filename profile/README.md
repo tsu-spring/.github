@@ -16,7 +16,8 @@ TSU Spring არის ორგანიზაციული ანგარ�
    * [Working with Databases (Gossip Nation)](https://github.com/tsu-spring/examples/tree/main/4.%20Working%20with%20Databases/website-with-database)
 5. **RESTful ვებ სერვისების აწყობა**
    * [Building Web Services (Fake IMDB REST API)](https://github.com/tsu-spring/examples/tree/main/5.%20Building%20Web%20Services/restfull-web-app)
-6. ვებ აპლიკაციის უსაფრთხოება (Spring Security-ით)
+6. **ვებ აპლიკაციის უსაფრთხოება (Spring Security-ით)**
+   * [Securing Web Applications (Blogium)](https://github.com/tsu-spring/examples/tree/main/6.%20Securing%20Web%20Applications/secured-web-app)
 7. ვებ აპლიკაციის ინტერნაციონალიზაცია/ლოკალიზაცია
 8. კონფიგურაციის გზები Spring Boot აპლიკაციებში
 9.  ლოგირების მექანიზმი Spring Boot-ში
