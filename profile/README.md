@@ -21,7 +21,7 @@ TSU Spring არის ორგანიზაციული ანგარ�
 7. **ვებ აპლიკაციის ინტერნაციონალიზაცია/ლოკალიზაცია**
    * [Multilingual Website](https://github.com/tsu-spring/examples/tree/main/7.%20Multilingual%20Websites/multilingual-website)
 8. **კონფიგურაციის გზები Spring Boot აპლიკაციებში**
-   * [Custom Configurations and Profiles](https://github.com/tsu-spring/examples/tree/main/8.%20Custom%20Configurations%20and%20Profiles)
+   * [Custom Configurations and Profiles](https://github.com/tsu-spring/examples/tree/main/8.%20Custom%20Configurations%20and%20Profiles/custom-configurations-and-profiles)
 9.  ლოგირების მექანიზმი Spring Boot-ში
 10. ვებ აპლიკაციის ტესტირება
 11. ვებ აპლიკაციის მონიტორინგი (Spring Boot Actuator-ით)
