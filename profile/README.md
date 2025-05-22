@@ -23,6 +23,7 @@ TSU Spring არის ორგანიზაციული ანგარ�
 8. **კონფიგურაციის გზები და პროფილები**
    * [Custom Configurations and Profiles](https://github.com/tsu-spring/examples/tree/main/8.%20Custom%20Configurations%20and%20Profiles/custom-configurations-and-profiles)
 9.  ლოგირების მექანიზმი Spring Boot-ში
+   * [Using Logging in Application](https://github.com/tsu-spring/examples/tree/main/9.%20Logging%20in%20Spring%20Boot/using-logging-in-application)
 10. ვებ აპლიკაციის ტესტირება
 11. ვებ აპლიკაციის მონიტორინგი (Spring Boot Actuator-ით)
 12. მესიჯინგი და ასინქრონული დამუშავება
