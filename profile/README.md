@@ -31,4 +31,5 @@ TSU Spring არის ორგანიზაციული ანგარ�
 12. **მესიჯინგი და ასინქრონული დამუშავება**
     * [JMS ActiveMQ 5 (Classic) Demo](https://github.com/tsu-spring/examples/tree/main/12.%20Messaging%20and%20Asynchronous%20Processing/jms-activemq-demo)
 13. მიკროსერვისული არქიტექტურა Spring Boot-ით
-14. Spring Boot აპლიკაციის გაშვება სხვადასხვა გარემოში
+14. **Spring Boot აპლიკაციის გაშვება სხვადასხვა გარემოში**
+    * [Traditional WAR Deployment](https://github.com/tsu-spring/examples/tree/main/14.%20Deploying%20Web%20Applications/traditional-deployment)
