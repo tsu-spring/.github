@@ -33,3 +33,6 @@ TSU Spring არის ორგანიზაციული ანგარ�
 13. მიკროსერვისული არქიტექტურა Spring Boot-ით
 14. **Spring Boot აპლიკაციის გაშვება სხვადასხვა გარემოში**
     * [Traditional WAR Deployment](https://github.com/tsu-spring/examples/tree/main/14.%20Deploying%20Web%20Applications/traditional-deployment)
+
+## სტუდენტების პროექტები (რჩეული)
+[Bored Reader](https://github.com/tsu-spring/boredreader) - A website for reading books and mangas, where u can chat with ai assistants.
