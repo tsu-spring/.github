@@ -35,4 +35,5 @@ TSU Spring არის ორგანიზაციული ანგარ�
     * [Traditional WAR Deployment](https://github.com/tsu-spring/examples/tree/main/14.%20Deploying%20Web%20Applications/traditional-deployment)
 
 ## სტუდენტების პროექტები (რჩეული)
+### 2025 (1)
 * [Bored Reader](https://github.com/tsu-spring/boredreader) - A website for reading books and mangas, where u can chat with ai assistants.
