@@ -1,6 +1,4 @@
-# Spring Boot Course
-
-Welcome my brothers and sisters 👋
+# Welcome to Spring Boot Course 👋
 
 This is the official repository for the Spring Boot course. Here you will find weekly topics, code examples, and selected student projects.
 
