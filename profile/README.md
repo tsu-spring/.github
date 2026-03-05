@@ -23,7 +23,7 @@ Before starting this course, students should be comfortable with:
 
 ## Course Topics (across 14 weeks):
 
-### [Week 1: Introduction to Spring & Spring Boot](https://github.com/tsu-spring/.github/tree/main/chapter-1-introduction-to-spring-boot.md)
+### [Week 1: Introduction to Spring & Spring Boot](https://github.com/tsu-spring/.github/tree/main/profile/chapter-1-introduction-to-spring-boot.md)
 - What is Spring Framework and why it matters
 - Spring Boot vs. traditional Spring: convention over configuration
 - Setting up a project with [Spring Initializr](https://start.spring.io/)
