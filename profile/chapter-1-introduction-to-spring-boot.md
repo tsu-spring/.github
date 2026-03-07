@@ -431,7 +431,7 @@ This pattern — a layout macro with a `<#nested>` placeholder — is the FreeMa
 
 Spring Framework ships with a set of built-in FreeMarker macros defined in a file called `spring.ftl`. These macros provide convenient integrations between FreeMarker and Spring MVC — most notably for form handling and for generating context-aware URLs.
 
-To use these macros, you import `spring.ftl` at the top of any template (or, more commonly, inside your layout template):
+To use these macros, you import `spring.ftl` at the top of any template:
 
 ```html
 <#import "/spring.ftl" as spring>
@@ -456,46 +456,6 @@ Then a plain HTML link like `<a href="/css/style.css">` would break because it d
 ```
 
 If the context path is `/blog`, these will produce `/blog/css/style.css`, `/blog/`, and `/blog/images/logo.png` respectively. If there is no context path, they produce `/css/style.css`, `/`, and `/images/logo.png`. This makes your templates portable regardless of how the application is deployed.
-
-### Integrating `@spring.url` Into the Layout
-
-A practical approach is to import `spring.ftl` inside your layout macro so that it is available to every page without requiring each page to import it separately:
-
-```html
-<#import "/spring.ftl" as spring>
-
-<#macro page title="My Blog">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
-    <link rel="stylesheet" href="<@spring.url '/css/style.css'/>">
-</head>
-<body>
-
-    <header>
-        <nav>
-            <a href="<@spring.url '/'/>">Home</a>
-            <a href="<@spring.url '/about'/>">About</a>
-            <a href="<@spring.url '/posts'/>">Posts</a>
-            <a href="<@spring.url '/contact'/>">Contact</a>
-        </nav>
-    </header>
-
-    <main>
-        <#nested>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 My Blog. All rights reserved.</p>
-    </footer>
-
-</body>
-</html>
-</#macro>
-```
 
 We will explore the other Spring macros (particularly the form-related ones such as `@spring.formInput`, `@spring.formSingleSelect`, and `@spring.showErrors`) in later chapters when we begin building forms and handling user input.
 
