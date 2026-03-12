@@ -107,7 +107,146 @@ The dependency is injected directly into the field. While concise, this approach
 
 ---
 
-## 2.4 The Bean Lifecycle
+## 2.4 Resolving Injection Ambiguity
+
+When Spring injects a dependency, it searches the ApplicationContext for a bean that matches the required type. Most of the time, there is exactly one bean of the needed type, and injection works without any additional guidance. But what happens when there are two or more beans of the same type?
+
+### The Problem: Multiple Beans of the Same Type
+
+Suppose we have an interface `NotificationSender` and two implementations:
+
+```java
+public interface NotificationSender {
+    void send(String message);
+}
+
+@Component
+public class EmailNotificationSender implements NotificationSender {
+    @Override
+    public void send(String message) {
+        // sends via email
+    }
+}
+
+@Component
+public class SmsNotificationSender implements NotificationSender {
+    @Override
+    public void send(String message) {
+        // sends via SMS
+    }
+}
+```
+
+Both classes are annotated with `@Component`, so Spring registers both as beans. Now consider a service that depends on `NotificationSender`:
+
+```java
+@Service
+public class OrderService {
+    private final NotificationSender notificationSender;
+
+    public OrderService(NotificationSender notificationSender) {
+        this.notificationSender = notificationSender;
+    }
+}
+```
+
+When Spring tries to inject `NotificationSender` into `OrderService`, it finds two candidates: `EmailNotificationSender` and `SmsNotificationSender`. It cannot decide which one to use, so it fails at startup with an error like:
+
+```
+No qualifying bean of type 'NotificationSender' available:
+expected single matching bean but found 2:
+emailNotificationSender, smsNotificationSender
+```
+
+This is a common situation in real applications — you might have multiple data source configurations, multiple implementations of a strategy interface, or multiple third-party service clients. Spring provides several mechanisms to resolve the ambiguity.
+
+### Solution 1: `@Primary`
+
+The `@Primary` annotation marks one bean as the default choice when multiple candidates exist:
+
+```java
+@Primary
+@Component
+public class EmailNotificationSender implements NotificationSender {
+    @Override
+    public void send(String message) {
+        // sends via email
+    }
+}
+
+@Component
+public class SmsNotificationSender implements NotificationSender {
+    @Override
+    public void send(String message) {
+        // sends via SMS
+    }
+}
+```
+
+Now, whenever Spring needs a `NotificationSender` and no further qualification is provided, it will inject `EmailNotificationSender`. The `SmsNotificationSender` is still a valid bean and can still be injected explicitly when needed.
+
+`@Primary` is the right choice when one implementation is the "usual" or "default" one and the other is used only in specific circumstances.
+
+### Solution 2: `@Qualifier`
+
+The `@Qualifier` annotation lets you specify exactly which bean you want by name:
+
+```java
+@Service
+public class OrderService {
+    private final NotificationSender notificationSender;
+
+    public OrderService(@Qualifier("smsNotificationSender") NotificationSender notificationSender) {
+        this.notificationSender = notificationSender;
+    }
+}
+```
+
+The string `"smsNotificationSender"` is the bean name — by default, Spring derives the bean name from the class name with a lowercase first letter. The `@Qualifier` annotation tells Spring to ignore any `@Primary` designation and inject the specifically named bean.
+
+`@Qualifier` is the right choice when different consumers of the same interface need different implementations. For example, one service might need the email sender while another needs the SMS sender.
+
+### Solution 3: Injecting by Field Name
+
+Spring also considers the parameter name as a hint. If the constructor parameter name matches a bean name, Spring will use that match to resolve the ambiguity:
+
+```java
+@Service
+public class OrderService {
+    private final NotificationSender smsNotificationSender;
+
+    public OrderService(NotificationSender smsNotificationSender) {
+        this.smsNotificationSender = smsNotificationSender;
+    }
+}
+```
+
+Here, the parameter is named `smsNotificationSender`, which matches the bean name of the SMS implementation. Spring resolves the ambiguity accordingly. While this works, it is less explicit than `@Qualifier` and can be fragile — renaming a parameter could break the injection silently. For clarity, prefer `@Qualifier` when the intent needs to be obvious.
+
+### Injecting All Implementations
+
+Sometimes you want all beans of a given type — for example, to send a notification through every available channel. You can inject a `List` of the interface type:
+
+```java
+@Service
+public class BroadcastService {
+    private final List<NotificationSender> senders;
+
+    public BroadcastService(List<NotificationSender> senders) {
+        this.senders = senders;
+    }
+
+    public void broadcast(String message) {
+        senders.forEach(sender -> sender.send(message));
+    }
+}
+```
+
+Spring automatically collects all beans that implement `NotificationSender` and injects them as a list. This pattern is useful for plugin architectures, event handlers, or any situation where you want extensibility without modifying existing code.
+
+---
+
+## 2.5 The Bean Lifecycle
 
 Every Spring bean goes through a well-defined lifecycle, managed entirely by the ApplicationContext.
 
@@ -143,7 +282,7 @@ Understanding the lifecycle matters because it tells you where to put setup and 
 
 ---
 
-## 2.5 Bean Scopes
+## 2.6 Bean Scopes
 
 When the ApplicationContext creates a bean, how many instances does it create, and how long do they live? The answer depends on the bean's **scope**.
 
@@ -173,7 +312,7 @@ A word of caution: injecting a prototype-scoped bean into a singleton-scoped bea
 
 ---
 
-## 2.6 Component Scanning and Stereotype Annotations
+## 2.7 Component Scanning and Stereotype Annotations
 
 In the examples above, we annotated classes with `@Service`, `@Component`, and `@Controller`. These are **stereotype annotations**, and they serve two purposes: they mark a class as a Spring-managed bean (so the container will detect and instantiate it), and they communicate the class's role in the application's architecture.
 
@@ -204,7 +343,7 @@ If a class is placed outside this package tree, it will not be found unless you 
 
 ---
 
-## 2.7 Defining Beans Explicitly with `@Bean`
+## 2.8 Defining Beans Explicitly with `@Bean`
 
 Stereotype annotations work well for classes you write yourself. But what about classes from third-party libraries? You cannot add `@Service` to a class you did not write. In these cases, you define beans explicitly using the `@Bean` annotation inside a `@Configuration` class.
 
@@ -234,7 +373,7 @@ This approach is also useful when you need custom initialization logic that goes
 
 ---
 
-## 2.8 Auto-Configuration Revisited
+## 2.9 Auto-Configuration Revisited
 
 In Chapter 1, we mentioned that Spring Boot auto-configures your application based on the libraries present on the classpath. Now that we understand beans, the ApplicationContext, and `@Configuration` classes, we can look at this mechanism more precisely.
 
@@ -258,7 +397,7 @@ The application will print a detailed conditions evaluation report at startup �
 
 ---
 
-## 2.9 Passing Data from Controllers to Templates
+## 2.10 Passing Data from Controllers to Templates
 
 In Chapter 1, we used view controllers to map URLs directly to FreeMarker templates. View controllers are convenient for static pages, but they cannot pass data to the template. For dynamic pages — pages that display data retrieved from a service, a database, or any other source — we need a proper `@Controller` class.
 
@@ -313,7 +452,7 @@ This is the fundamental data flow of a Spring MVC application: the controller re
 
 ---
 
-## 2.10 Introduction to Logging
+## 2.11 Introduction to Logging
 
 Up to this point, when something went wrong or we wanted to see what our application was doing, we might have been tempted to use `System.out.println()`. That works in a trivial program, but it is entirely inadequate for a real application. Print statements cannot be turned on or off without changing code. They cannot be routed to different destinations. They carry no metadata — no timestamps, no severity levels, no class names.
 
@@ -331,7 +470,7 @@ A proper logging system gives you:
 
 ---
 
-## 2.11 Default Logging in Spring Boot
+## 2.12 Default Logging in Spring Boot
 
 The Java ecosystem has a long history of logging libraries: `java.util.logging` (built into the JDK), Apache Log4j, Logback, and several others. To avoid tying application code to a specific implementation, an abstraction layer called **SLF4J** (Simple Logging Facade for Java) was created. SLF4J defines a common API — you write your logging calls against SLF4J, and the actual logging work is done by whichever implementation is present at runtime.
 
@@ -345,7 +484,7 @@ You do not need to add any dependencies for this — `spring-boot-starter-web` (
 
 ---
 
-## 2.12 Log Levels
+## 2.13 Log Levels
 
 Every log message has a **level** that indicates its severity. The levels, in increasing order of importance, are:
 
@@ -376,7 +515,7 @@ This granularity is one of the great strengths of a real logging system. You can
 
 ---
 
-## 2.13 Writing Log Messages
+## 2.14 Writing Log Messages
 
 ### The Manual Approach
 
@@ -430,7 +569,7 @@ Lombok generates the `private static final Logger log = LoggerFactory.getLogger(
 
 ---
 
-## 2.14 Logging to a File
+## 2.15 Logging to a File
 
 Console output disappears when the application stops. For any application that runs in a server environment, you will want logs written to a file as well.
 
@@ -450,7 +589,7 @@ logging.file.path=/var/logs/blog
 
 ---
 
-## 2.15 Log Patterns
+## 2.16 Log Patterns
 
 Every log message is formatted according to a **pattern** — a string that defines what information appears and in what order. Spring Boot's default pattern produces output that looks something like this:
 
@@ -479,7 +618,7 @@ The most common pattern elements are:
 
 ---
 
-## 2.16 Logback Configuration with `logback-spring.xml`
+## 2.17 Logback Configuration with `logback-spring.xml`
 
 For requirements that go beyond what `application.properties` can express — such as multiple appenders with different levels, rolling policies, or conditional configuration based on Spring profiles — you can provide a full Logback configuration file.
 
@@ -529,7 +668,7 @@ Use `logback-spring.xml` (with the `-spring` suffix) rather than plain `logback.
 
 ---
 
-## 2.17 Logging Best Practices
+## 2.18 Logging Best Practices
 
 **Use SLF4J, not a specific implementation.** All your application code should import from `org.slf4j`, never from `ch.qos.logback` or `org.apache.log4j` directly. This keeps you free to change the underlying implementation without touching application code.
 
@@ -549,7 +688,7 @@ Use `logback-spring.xml` (with the `-spring` suffix) rather than plain `logback.
 
 This chapter covered the foundational mechanisms that make Spring applications work, and introduced the logging practices that keep those applications observable.
 
-The **ApplicationContext** is Spring's IoC container — it creates beans, injects dependencies, and manages the entire lifecycle from instantiation through destruction. **Inversion of Control** is the principle: the framework manages objects, not your code. **Dependency Injection** is the mechanism: dependencies are provided to a class from outside, typically through its constructor.
+The **ApplicationContext** is Spring's IoC container — it creates beans, injects dependencies, and manages the entire lifecycle from instantiation through destruction. **Inversion of Control** is the principle: the framework manages objects, not your code. **Dependency Injection** is the mechanism: dependencies are provided to a class from outside, typically through its constructor. When multiple beans of the same type exist, **`@Primary`** designates a default, **`@Qualifier`** selects a specific bean by name, and injecting a `List` collects all implementations.
 
 Every bean has a **lifecycle** — instantiation, injection, initialization (`@PostConstruct`), use, and destruction (`@PreDestroy`). Beans have **scopes** that determine how many instances exist; the default singleton scope is appropriate for most components.
 
