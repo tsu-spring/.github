@@ -35,7 +35,7 @@ Before starting this course, students should be comfortable with:
   * [Static Website](https://github.com/tsu-spring/examples/tree/main/1.%20Building%20Static%20Websites/static-website)
   * [Static Website (using Bootstrap CSS)](https://github.com/tsu-spring/examples/tree/main/1.%20Building%20Static%20Websites/bootstrap-website)
 
-### Week 2: Spring Core Concepts & Logging
+### [Week 2: Spring Core Concepts & Logging](https://github.com/tsu-spring/.github/blob/master/profile/chapter-2-spring-core-concepts-and-logging.md)
 - Understanding the ApplicationContext and bean lifecycle
 - Inversion of Control (IoC) and Dependency Injection (DI)
 - Bean scopes (`singleton`, `prototype`, `request`, `session`)
