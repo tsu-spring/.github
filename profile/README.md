@@ -50,7 +50,7 @@ Before starting this course, students should be comfortable with:
   * [Dynamic Website (Bookem All)](https://github.com/tsu-spring/examples/tree/main/2.%20Building%20Dynamic%20Websites/dynamic-website)
   * [Using Logging in Application](https://github.com/tsu-spring/examples/tree/main/9.%20Logging%20in%20Spring%20Boot/using-logging-in-application)
 
-### Week 3: Building Interactive Web Applications
+### [Week 3: Building Interactive Web Applications](https://github.com/tsu-spring/.github/blob/master/profile/chapter-3-building-interactive-web-applications.md)
 - Handling HTTP GET and POST requests
 - Building and processing HTML forms with Thymeleaf
 - Data binding with `@ModelAttribute`
