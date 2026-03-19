@@ -62,6 +62,7 @@ Before starting this course, students should be comfortable with:
 - Custom error pages with Thymeleaf
 - **Examples:**
   * [Interactive Web Application (Albumer)](https://github.com/tsu-spring/examples/tree/main/3.%20Building%20Interactive%20Web%20Applications/interactive-website)
+  * [IMDB (with Freemarker)](https://github.com/tsu-spring/examples/tree/main/3.%20Building%20Interactive%20Web%20Applications/imdb)
 
 ### Week 4: Working with Databases
 - Introduction to ORM and JPA concepts
