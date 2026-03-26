@@ -78,6 +78,7 @@ Before starting this course, students should be comfortable with:
 - Brief intro to schema migration tools (Flyway, Liquibase) for production use
 - **Examples:**
   * [Working with Databases (Gossip Nation)](https://github.com/tsu-spring/examples/tree/main/4.%20Working%20with%20Databases/website-with-database)
+  * [Bookinist](https://github.com/tsu-spring/examples/tree/main/4.%20Working%20with%20Databases/bookinist)
 
 ### Week 5: Configuration & Profiles
 - Working with `application.properties` and `application.yml`
