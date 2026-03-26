@@ -519,6 +519,49 @@ This controller intercepts all error responses. It reads the HTTP status code fr
 
 The convention-based approach and the custom `ErrorController` can coexist — the `ErrorController` takes precedence when it is present, but falls back to the convention-based templates for any status codes it does not explicitly handle.
 
+### Exception Handling with @ControllerAdvice
+
+The convention-based pages and `ErrorController` handle generic HTTP errors — 404 from missing routes, 500 from unexpected failures. But as your application grows, you will have **domain-specific** exceptions: a requested item does not exist, a user is not authorized, a business rule is violated. For these, Spring provides a more targeted mechanism: `@ControllerAdvice` with `@ExceptionHandler`.
+
+A `@ControllerAdvice` class acts as a global interceptor for exceptions thrown by any controller. Each method annotated with `@ExceptionHandler` specifies which exception type it catches:
+
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNotFound(ProductNotFoundException ex, Model model) {
+        model.addAttribute("message", ex.getMessage());
+        return "error/404";
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleGenericError(Exception ex, Model model) {
+        model.addAttribute("message", "Something went wrong. Please try again later.");
+        return "error/500";
+    }
+}
+```
+
+When a `ProductNotFoundException` is thrown anywhere in the application — in a controller, in a service called by a controller — Spring intercepts it before the response is sent, sets the HTTP status to 404, adds the exception's message to the model, and renders the `error/404` template. The catch-all `Exception` handler ensures that any unexpected error produces a user-friendly 500 page instead of a raw stack trace.
+
+The exception classes themselves are simple:
+
+```java
+public class ProductNotFoundException extends RuntimeException {
+
+    public ProductNotFoundException(Long id) {
+        super("Product with ID " + id + " was not found.");
+    }
+}
+```
+
+This approach is more powerful than `ErrorController` for several reasons. It gives you **type-safe** exception handling — different exceptions can produce different responses with different status codes and different templates. It also keeps error-handling logic **close to the domain** — you can see exactly which error scenarios your application handles and how. And because `@ControllerAdvice` participates in Spring's full MVC pipeline, your exception handler methods have access to the `Model`, can return view names, and work seamlessly with your templates.
+
+In practice, `@ControllerAdvice` is the most common approach in Spring applications. You will typically use it alongside convention-based error pages: the `@ControllerAdvice` handles domain exceptions you anticipate, and the convention-based pages serve as a fallback for anything else.
+
 ---
 
 ## Summary
@@ -537,7 +580,7 @@ This chapter covered the mechanisms that turn a display-only website into an int
 
 **The Post/Redirect/Get pattern** prevents duplicate form submissions by redirecting after a successful POST. **Flash attributes** preserve messages across the redirect by temporarily storing them in the session.
 
-**Custom error pages** can be created by placing templates in `/templates/error/` named after status codes, or by implementing `ErrorController` for programmatic control over error handling.
+**Custom error pages** can be created by placing templates in `/templates/error/` named after status codes, or by implementing `ErrorController` for programmatic control. **`@ControllerAdvice`** with `@ExceptionHandler` provides the most flexible approach — it catches domain-specific exceptions globally and routes them to the appropriate error template with the correct HTTP status code.
 
 ---
 

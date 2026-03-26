@@ -443,6 +443,22 @@ public String listProducts(@RequestParam(defaultValue = "0") int page,
 }
 ```
 
+Alternatively, Spring Data can resolve a `Pageable` parameter directly from the request, which eliminates the manual `PageRequest` construction. You can also use `@SortDefault` to specify a default sort order when the client does not provide one:
+
+```java
+@GetMapping("/products")
+public String listProducts(@PageableDefault(size = 9)
+                           @SortDefault(sort = "name", direction = Sort.Direction.ASC)
+                           Pageable pageable,
+                           Model model) {
+    Page<Product> productPage = productService.findAll(pageable);
+    model.addAttribute("products", productPage.getContent());
+    model.addAttribute("currentPage", pageable.getPageNumber());
+    model.addAttribute("totalPages", productPage.getTotalPages());
+    return "products/list";
+}
+```
+
 ### Building Paginated Views with FreeMarker
 
 The template iterates over the products and renders navigation controls for moving between pages:
@@ -865,7 +881,157 @@ Both tools are production-grade and widely used. Flyway is simpler and a good de
 
 ---
 
-## 4.14 Putting It All Together: A Complete Example
+## 4.14 Practical Patterns for Database-Backed Applications
+
+As your application grows beyond basic CRUD, several patterns come up repeatedly. This section covers the most important ones: separating form objects from entities, handling "not found" scenarios cleanly, and storing binary data.
+
+### Separating Form Objects from Entities
+
+Earlier in this chapter, you saw entities that carry both JPA annotations and Bean Validation annotations — serving double duty as database mappings and form-backing objects. This works for simple cases, but it creates problems as your application grows. An entity might have fields that should not be editable through a form (like `createdAt` or internal relationships), or a form might need fields that do not exist on the entity (like a password confirmation field or a file upload).
+
+The cleaner approach is to use a dedicated **form class** (sometimes called a DTO — Data Transfer Object) for form binding, and then map it to the entity in the controller or service:
+
+```java
+public class BookForm {
+
+    @NotBlank
+    private String title;
+
+    @NotBlank
+    private String author;
+
+    @NotNull
+    private Integer publishedYear;
+
+    @NotBlank
+    private String isbn;
+
+    @DecimalMin("0.0")
+    @DecimalMax("5.0")
+    private Double rating;
+
+    @NotEmpty
+    private List<Long> genreIds;
+
+    private MultipartFile coverImage;
+
+    // getters and setters
+}
+```
+
+The form class carries only the fields the user submits, with validation rules tailored to the form. The `genreIds` field holds genre IDs as `Long` values — not entity references. The `coverImage` field is a `MultipartFile` for file uploads — something that has no place on a JPA entity.
+
+In the controller, you validate the form, then map it to the entity:
+
+```java
+@PostMapping("/book/new")
+public String addBook(@Valid @ModelAttribute BookForm bookForm,
+                      BindingResult bindingResult,
+                      Model model) throws IOException {
+    if (bindingResult.hasErrors()) {
+        model.addAttribute("genres", genreService.getAllGenres());
+        return "add-book";
+    }
+
+    Book book = new Book();
+    book.setTitle(bookForm.getTitle());
+    book.setAuthor(bookForm.getAuthor());
+    book.setPublishedYear(bookForm.getPublishedYear());
+    book.setIsbn(bookForm.getIsbn());
+    book.setRating(bookForm.getRating());
+    book.setGenres(genreService.getGenresByIds(bookForm.getGenreIds()));
+    book.setCreatedAt(LocalDateTime.now());
+
+    bookService.saveBook(book);
+    return "redirect:/book/" + book.getId();
+}
+```
+
+This separation keeps your entity clean — it remains a pure database mapping with no form-related concerns. It also makes validation more flexible: the form can require fields that are optional on the entity, or omit fields that the server sets automatically.
+
+### Custom Exceptions for "Not Found" Scenarios
+
+When a user requests an entity that does not exist — say, `/book/9999` — you need to return a meaningful error instead of a stack trace. The standard pattern is to create a custom exception and throw it from the service layer:
+
+```java
+public class BookNotFoundException extends RuntimeException {
+
+    public BookNotFoundException(Long id) {
+        super("Book with ID " + id + " was not found.");
+    }
+}
+```
+
+```java
+public Book getBookById(Long id) {
+    return bookRepository.findById(id)
+            .orElseThrow(() -> new BookNotFoundException(id));
+}
+```
+
+This pairs naturally with the `@ControllerAdvice` exception handling mechanism covered in Chapter 3 — a global `@ExceptionHandler` catches `BookNotFoundException`, sets the HTTP status to 404, and renders a user-friendly error page. Creating domain-specific exceptions like this makes your error handling explicit and type-safe: you can see exactly which failure scenarios your application handles and how each one is presented to the user.
+
+### Storing Binary Data in Entities
+
+Sometimes you need to store files — images, documents, attachments — alongside your entity data. The simplest approach is to store the file as a byte array directly in the database:
+
+```java
+@Entity
+public class Book {
+
+    // ... other fields ...
+
+    @Column(name = "cover_image")
+    private byte[] coverImage;
+
+    @Column(name = "cover_image_type")
+    private String coverImageType;
+}
+```
+
+When saving, read the uploaded file's bytes and content type from the `MultipartFile`:
+
+```java
+if (!bookForm.getCoverImage().isEmpty()) {
+    book.setCoverImage(bookForm.getCoverImage().getBytes());
+    book.setCoverImageType(bookForm.getCoverImage().getContentType());
+}
+```
+
+To serve the image back, create a dedicated controller that returns the raw bytes with the correct `Content-Type` header:
+
+```java
+@Controller
+public class ImageController {
+
+    private final BookService bookService;
+
+    public ImageController(BookService bookService) {
+        this.bookService = bookService;
+    }
+
+    @GetMapping("/image/cover/{bookId}")
+    public ResponseEntity<byte[]> getCoverImage(@PathVariable Long bookId) {
+        Book book = bookService.getBookById(bookId);
+
+        if (book.getCoverImage() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(book.getCoverImageType()))
+                .body(book.getCoverImage());
+    }
+}
+```
+
+In your template, reference the image through this endpoint: `<img src="/image/cover/${book.id}" />`.
+
+This approach works well for small files and simple applications. For larger files or high-traffic applications, storing files on the filesystem or in cloud object storage (like Amazon S3) and keeping only the file path in the database is more efficient — large BLOBs increase database backup size and slow down queries that load the entity.
+
+---
+
+## 4.15 Putting It All Together: A Complete Example
 
 To see how entities, repositories, services, and controllers connect in a real application, here is a complete example — a "Gossip" posting application:
 
@@ -954,6 +1120,12 @@ This chapter covered the tools and techniques for connecting a Spring Boot appli
 
 **Database configuration** uses `application.properties` to switch between H2 for development and PostgreSQL or MySQL for production. The `ddl-auto` property controls how Hibernate manages the schema.
 
+**Form objects (DTOs)** should be separated from entities as your application grows. A dedicated form class handles validation and user input, while the entity remains a pure database mapping. Map between them in the controller or service.
+
+**Custom exceptions** like `BookNotFoundException` make "entity not found" errors explicit. Throw them from the service layer with `orElseThrow()`, and handle them with the `@ControllerAdvice` mechanism from Chapter 3.
+
+**Binary data** such as images can be stored as `byte[]` fields on entities and served through a dedicated controller with the correct `Content-Type` header. For large files or high-traffic applications, prefer external storage with only the file path in the database.
+
 **Database initialization** with `data.sql` seeds development databases with simple test data. For more complex scenarios, **`CommandLineRunner`** provides programmatic initialization with full access to your repositories and entity model. When working with relationships during initialization, always fetch existing entities from the repository rather than creating new Java objects — otherwise, JPA will throw a "detached entity passed to persist" error. **Schema migration** tools like Flyway and Liquibase provide version-controlled, repeatable migrations for production environments.
 
 ---
@@ -976,7 +1148,7 @@ Extend your interactive web application from Chapter 3 with persistent data stor
 
 **Requirements:**
 
-1. **Define JPA entities** with proper annotations (`@Entity`, `@Id`, `@GeneratedValue`, `@Column`). Your entities should include validation annotations from Chapter 3 so they serve as both database mappings and form-backing objects.
+1. **Define JPA entities** with proper annotations (`@Entity`, `@Id`, `@GeneratedValue`, `@Column`). Use **separate form/DTO classes** for form binding and validation, keeping your entities focused on database mapping.
 
 2. **Map at least one relationship** between entities (e.g., `@ManyToOne` / `@OneToMany` between blog posts and a category or author entity).
 
@@ -984,6 +1156,8 @@ Extend your interactive web application from Chapter 3 with persistent data stor
 
 4. **Implement pagination** for listing pages — display a configurable number of items per page with Previous/Next navigation controls rendered in FreeMarker.
 
-5. **Use H2 database** for development with the H2 console enabled, and pre-populate data using `data.sql`.
+5. **Use H2 database** for development with the H2 console enabled, and pre-populate data using `data.sql` or a `CommandLineRunner`.
 
 6. **Add `@Transactional`** where appropriate — for example, on service methods that modify multiple entities in a single operation.
+
+7. **Handle errors gracefully** — create a custom exception for "entity not found" scenarios and a `@ControllerAdvice` that renders user-friendly error pages.
