@@ -641,7 +641,182 @@ Place these files in `src/main/resources/` — Spring Boot finds them automatica
 
 ---
 
-## 4.12 Schema Migration with Flyway and Liquibase
+## 4.12 Programmatic Data Initialization with CommandLineRunner
+
+While `data.sql` works for simple cases, it has limitations. SQL scripts cannot easily generate randomized test data, they do not benefit from your entity model or validation logic, and they quickly become unwieldy when your schema involves relationships. For more complex initialization scenarios, Spring Boot provides a programmatic alternative: the `CommandLineRunner` interface.
+
+A `CommandLineRunner` is a Spring-managed component whose `run` method is executed once, immediately after the application context starts. You can inject repositories into it and use them to populate the database with Java code:
+
+```java
+@Component
+@RequiredArgsConstructor
+public class DataInitializer implements CommandLineRunner {
+
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+
+    @Override
+    public void run(String... args) {
+        Category electronics = new Category();
+        electronics.setName("Electronics");
+        categoryRepository.save(electronics);
+
+        Category books = new Category();
+        books.setName("Books");
+        categoryRepository.save(books);
+
+        Product laptop = new Product();
+        laptop.setName("Laptop");
+        laptop.setPrice(999.99);
+        laptop.setCategory(electronics);
+        productRepository.save(laptop);
+
+        Product novel = new Product();
+        novel.setName("Spring in Action");
+        novel.setPrice(49.99);
+        novel.setCategory(books);
+        productRepository.save(novel);
+    }
+}
+```
+
+This approach gives you the full power of Java — you can use loops, read from external files (JSON, CSV), generate random data, and enforce the same validation rules your entities define. It is especially useful when your data model involves relationships that would be tedious to express in raw SQL.
+
+### The "Detached Entity Passed to Persist" Pitfall
+
+When populating data programmatically, there is a common and frustrating error that catches many developers off guard. Consider this scenario: you have a `Book` entity with a `@ManyToMany` relationship to `Genre`, and you want to seed books from a JSON file where each book references its genres by name.
+
+Here is the entity setup:
+
+```java
+@Entity
+public class Book {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "book_genres",
+        joinColumns = @JoinColumn(name = "book_id"),
+        inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    private Set<Genre> genres = new HashSet<>();
+
+    // other fields, constructors, getters, setters
+}
+
+@Entity
+public class Genre {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @ManyToMany(mappedBy = "genres")
+    private Set<Book> books = new HashSet<>();
+}
+```
+
+Now suppose you write a `CommandLineRunner` that first saves the genres, then reads books from JSON and creates `Genre` objects on the fly to attach to each book:
+
+```java
+@Component
+@RequiredArgsConstructor
+public class FakeDataFiller implements CommandLineRunner {
+
+    private final BookRepository bookRepository;
+    private final GenreRepository genreRepository;
+
+    @Override
+    public void run(String... args) {
+        // Step 1: Save genres to the database
+        Genre fiction = new Genre();
+        fiction.setName("Fiction");
+        genreRepository.save(fiction);
+
+        Genre sciFi = new Genre();
+        sciFi.setName("Science Fiction");
+        genreRepository.save(sciFi);
+
+        // Step 2: Create a book and attach genres — the WRONG way
+        Book book = new Book();
+        book.setTitle("Dune");
+
+        // Creating a NEW Genre object with the same name, but it is NOT
+        // the managed entity we just saved — it is a completely separate
+        // Java object that JPA knows nothing about.
+        Genre detachedGenre = new Genre();
+        detachedGenre.setId(1L);          // Even setting the ID does not help
+        detachedGenre.setName("Science Fiction");
+
+        book.setGenres(Set.of(detachedGenre));
+        bookRepository.save(book);  // BOOM — Exception!
+    }
+}
+```
+
+This fails with:
+
+```
+org.hibernate.PersistentObjectException:
+    Detached entity passed to persist: com.example.genre.Genre
+```
+
+**What happened?** JPA manages entities through a **persistence context** — a kind of cache that tracks every entity loaded from or saved to the database within the current session. When you called `genreRepository.save(fiction)`, that specific `fiction` object became a **managed** entity in the persistence context.
+
+But the `detachedGenre` object created afterwards is not the same Java object — it is a brand new instance that JPA has never seen. Even though it has the same name and even the same ID, JPA does not recognize it as the entity already in the database. It is a **detached** entity.
+
+When you call `bookRepository.save(book)`, Hibernate sees that `book` is a new entity (no ID yet), so it calls `persist()`. Because the `@ManyToMany` relationship includes `CascadeType.PERSIST`, Hibernate cascades the persist operation to the associated genres. It tries to `persist()` the `detachedGenre` — but that entity already has an ID, which tells Hibernate it is not truly new. Hibernate cannot reconcile this: you are asking it to insert a new entity that already claims to have a database identity. So it throws `PersistentObjectException`.
+
+### The Fix: Always Use Managed Entities
+
+The solution is straightforward — never attach unmanaged entity instances to relationships. Instead, look up the existing entities from the repository so you get back the managed references:
+
+```java
+@Component
+@RequiredArgsConstructor
+public class FakeDataFiller implements CommandLineRunner {
+
+    private final BookRepository bookRepository;
+    private final GenreRepository genreRepository;
+
+    @Override
+    public void run(String... args) {
+        // Step 1: Save genres
+        Genre fiction = new Genre();
+        fiction.setName("Fiction");
+        genreRepository.save(fiction);
+
+        Genre sciFi = new Genre();
+        sciFi.setName("Science Fiction");
+        genreRepository.save(sciFi);
+
+        // Step 2: Create a book and attach genres — the RIGHT way
+        Book book = new Book();
+        book.setTitle("Dune");
+
+        // Look up the genre from the repository — this returns a MANAGED entity
+        Genre managedSciFi = genreRepository.findByName("Science Fiction");
+
+        book.setGenres(Set.of(managedSciFi));
+        bookRepository.save(book);  // Works correctly
+    }
+}
+```
+
+The `genreRepository.findByName("Science Fiction")` call returns the same managed entity that the persistence context is already tracking. When Hibernate cascades the persist to this genre, it recognizes it as an existing managed entity and simply creates the join table entry — no attempt to insert a duplicate.
+
+This pattern applies to any relationship where the referenced entity already exists in the database. Whether you are working with `@ManyToOne`, `@ManyToMany`, or `@OneToOne`, the rule is the same: **if the entity is already persisted, fetch it from the repository before attaching it to another entity**. Creating a new Java object with the same ID or same field values is not enough — JPA cares about object identity within the persistence context, not just database identity.
+
+---
+
+## 4.13 Schema Migration with Flyway and Liquibase (Overview)
 
 Manually managing database schema changes is risky — it is easy to forget a step, apply changes out of order, or lose track of what has been applied to which environment. Schema migration tools solve this by providing version-controlled, repeatable, and automated database migrations.
 
@@ -690,7 +865,7 @@ Both tools are production-grade and widely used. Flyway is simpler and a good de
 
 ---
 
-## 4.13 Putting It All Together: A Complete Example
+## 4.14 Putting It All Together: A Complete Example
 
 To see how entities, repositories, services, and controllers connect in a real application, here is a complete example — a "Gossip" posting application:
 
@@ -779,7 +954,7 @@ This chapter covered the tools and techniques for connecting a Spring Boot appli
 
 **Database configuration** uses `application.properties` to switch between H2 for development and PostgreSQL or MySQL for production. The `ddl-auto` property controls how Hibernate manages the schema.
 
-**Database initialization** with `data.sql` seeds development databases with test data. **Schema migration** tools like Flyway and Liquibase provide version-controlled, repeatable migrations for production environments.
+**Database initialization** with `data.sql` seeds development databases with simple test data. For more complex scenarios, **`CommandLineRunner`** provides programmatic initialization with full access to your repositories and entity model. When working with relationships during initialization, always fetch existing entities from the repository rather than creating new Java objects — otherwise, JPA will throw a "detached entity passed to persist" error. **Schema migration** tools like Flyway and Liquibase provide version-controlled, repeatable migrations for production environments.
 
 ---
 
