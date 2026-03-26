@@ -64,7 +64,7 @@ Before starting this course, students should be comfortable with:
   * [Interactive Web Application (Albumer)](https://github.com/tsu-spring/examples/tree/main/3.%20Building%20Interactive%20Web%20Applications/interactive-website)
   * [IMDB (with Freemarker)](https://github.com/tsu-spring/examples/tree/main/3.%20Building%20Interactive%20Web%20Applications/imdb)
 
-### Week 4: Working with Databases
+### Week 4: [Working with Databases](https://github.com/tsu-spring/.github/blob/master/profile/chapter-4-working-with-databases.md)
 - Introduction to ORM and JPA concepts
 - Defining entities with `@Entity`, `@Id`, `@GeneratedValue`
 - Mapping relationships: `@OneToMany`, `@ManyToOne`, `@ManyToMany`
