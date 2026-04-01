@@ -80,7 +80,7 @@ Before starting this course, students should be comfortable with:
   * [Working with Databases (Gossip Nation)](https://github.com/tsu-spring/examples/tree/main/4.%20Working%20with%20Databases/website-with-database)
   * [Bookinist](https://github.com/tsu-spring/examples/tree/main/4.%20Working%20with%20Databases/bookinist)
 
-### Week 5: Configuration & Profiles
+### [Week 5: Configuration & Profiles](https://github.com/tsu-spring/.github/blob/master/profile/chapter-5-configuration-and-profiles.md)
 - Working with `application.properties` and `application.yml`
 - Binding configuration to Java objects with `@ConfigurationProperties`
 - Using `@Value` for simple property injection
