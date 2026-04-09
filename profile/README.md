@@ -91,7 +91,7 @@ Before starting this course, students should be comfortable with:
 - **Examples:**
   * [Custom Configurations and Profiles](https://github.com/tsu-spring/examples/tree/main/8.%20Custom%20Configurations%20and%20Profiles/custom-configurations-and-profiles)
 
-### Week 6: Building RESTful Web Services
+### [Week 6: Building RESTful Web Services](https://github.com/tsu-spring/.github/blob/master/profile/chapter-6-building-restful-web-services.md)
 - REST principles and HTTP methods (GET, POST, PUT, PATCH, DELETE)
 - Building REST controllers with `@RestController` and `@RequestMapping`
 - Path variables, query parameters, and request bodies
