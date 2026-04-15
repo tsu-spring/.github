@@ -104,7 +104,7 @@ Before starting this course, students should be comfortable with:
 - **Examples:**
   * [Building Web Services (Fake IMDB REST API)](https://github.com/tsu-spring/examples/tree/main/5.%20Building%20Web%20Services/restfull-web-app)
 
-### Week 7: Testing Web Applications
+### [Week 7: Testing Web Applications](https://github.com/tsu-spring/.github/blob/master/profile/chapter-7-testing-web-applications.md)
 - Why testing matters: the testing pyramid (unit, integration, end-to-end)
 - Unit testing with JUnit 5 and Mockito
 - Writing testable code: constructor injection and loose coupling
