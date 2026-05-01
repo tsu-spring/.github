@@ -115,7 +115,7 @@ Before starting this course, students should be comfortable with:
 - **Examples:**
   * [Application with Tests](https://github.com/tsu-spring/examples/tree/main/10.%20Testing%20Web%20Applications/application-with-tests)
 
-### Week 8: Securing Web Applications
+### [Week 8: Securing Web Applications](https://github.com/tsu-spring/.github/blob/master/profile/chapter-8-securing-web-applications.md)
 - Why security matters: common vulnerabilities (CSRF, XSS, SQL injection)
 - Adding Spring Security to a project
 - Authentication: in-memory, JDBC-based, and custom `UserDetailsService`
