@@ -128,7 +128,7 @@ Before starting this course, students should be comfortable with:
 - **Examples:**
   * [Securing Web Applications (Blogium)](https://github.com/tsu-spring/examples/tree/main/6.%20Securing%20Web%20Applications/secured-web-app)
 
-### Week 9: Internationalization & Localization
+### [Week 9: Internationalization & Localization](https://github.com/tsu-spring/.github/blob/master/profile/chapter-9-internationalization-and-localization.md)
 - Understanding i18n and l10n concepts
 - Setting up message bundles (`messages.properties`, `messages_ka.properties`)
 - Using `MessageSource` and Thymeleaf's `#{...}` syntax
