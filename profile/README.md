@@ -138,7 +138,7 @@ Before starting this course, students should be comfortable with:
 - **Examples:**
   * [Multilingual Website](https://github.com/tsu-spring/examples/tree/main/7.%20Multilingual%20Websites/multilingual-website)
 
-### Week 10: Consuming External APIs & Caching
+### [Week 10: Consuming External APIs & Caching](https://github.com/tsu-spring/.github/blob/master/profile/chapter-10-consuming-external-apis-and-caching.md)
 - Calling external REST APIs with `RestClient` (Spring Boot 3.2+)
 - Handling API responses and error scenarios
 - Mapping JSON responses to Java objects
