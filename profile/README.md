@@ -146,7 +146,7 @@ Before starting this course, students should be comfortable with:
 - When and where to use caching effectively
 - Brief overview of cache providers (Caffeine, Redis)
 
-### Week 11: Monitoring Web Applications
+### [Week 11: Monitoring Web Applications](https://github.com/tsu-spring/.github/blob/master/profile/chapter-11-monitoring-web-applications.md)
 - Introduction to observability: why monitoring matters in production
 - Adding and configuring Spring Boot Actuator
 - Built-in endpoints: `/health`, `/info`, `/metrics`, `/env`
