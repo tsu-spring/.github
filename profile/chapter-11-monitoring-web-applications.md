@@ -340,7 +340,7 @@ public class PaymentService {
 }
 ```
 
-This requires the `spring-boot-starter-aop` dependency and an `ObservedAspect` bean. `@Observed` is the simplest way to instrument a method when you do not need custom tags or conditional logic.
+This requires the `spring-boot-starter-aspectj` dependency and enabling `management.observations.annotations.enabled=true` property. `@Observed` is the simplest way to instrument a method when you do not need custom tags or conditional logic.
 
 ### Viewing Custom Metrics
 
