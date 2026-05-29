@@ -158,7 +158,7 @@ Before starting this course, students should be comfortable with:
 - **Examples:**
   * [Application with Monitoring](https://github.com/tsu-spring/examples/tree/main/11.%20Monitoring%20Web%20Applications/application-with-monitoring)
 
-### Week 12: Messaging & Asynchronous Processing
+### [Week 12: Messaging & Asynchronous Processing](https://github.com/tsu-spring/.github/blob/master/profile/chapter-12-messaging-and-async-processing.md)
 - Synchronous vs. asynchronous communication patterns
 - Introduction to message brokers and JMS
 - Setting up ActiveMQ with Spring Boot
