@@ -170,7 +170,7 @@ Before starting this course, students should be comfortable with:
 - **Examples:**
   * [JMS ActiveMQ 5 (Classic) Demo](https://github.com/tsu-spring/examples/tree/main/12.%20Messaging%20and%20Asynchronous%20Processing/jms-activemq-demo)
 
-### Week 13: Microservices Architecture with Spring Boot
+### [Week 13: Microservices Architecture with Spring Boot](https://github.com/tsu-spring/.github/blob/master/profile/chapter-13-microservices-architecture.md)
 - Monolith vs. microservices: trade-offs and when to use each
 - Decomposing a monolith into services
 - Inter-service communication with `RestClient` and messaging
