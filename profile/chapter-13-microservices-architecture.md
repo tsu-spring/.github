@@ -300,20 +300,32 @@ eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
 @Configuration
 public class RestClientConfig {
 
+    // A plain builder for infrastructure that makes its own HTTP calls — in
+    // particular the Eureka client, which uses RestClient in Spring Cloud 2025.1.
     @Bean
-    @LoadBalanced
     public RestClient.Builder restClientBuilder() {
         return RestClient.builder();
     }
 
+    // The load-balanced builder. defaultCandidate = false keeps it out of
+    // ordinary by-type autowiring, so only injection points that explicitly
+    // ask for @LoadBalanced receive it.
+    @Bean(defaultCandidate = false)
+    @LoadBalanced
+    public RestClient.Builder loadBalancedRestClientBuilder() {
+        return RestClient.builder();
+    }
+
     @Bean
-    public RestClient restClient(RestClient.Builder builder) {
+    public RestClient restClient(@LoadBalanced RestClient.Builder builder) {
         return builder.baseUrl("http://calculator-service").build();
     }
 }
 ```
 
 `@LoadBalanced` is the crucial annotation. Without it, `http://calculator-service` would be treated as a literal hostname and fail with a DNS error. With it, Spring Cloud LoadBalancer intercepts the request, queries Eureka for instances of `calculator-service`, and routes the request to one of them.
+
+There is a subtlety worth understanding. In Spring Cloud 2025.1 the Eureka client *itself* uses `RestClient` for its calls to the registry. If the only `RestClient.Builder` in the context were the `@LoadBalanced` one, Eureka would pick it up and try to load-balance `http://localhost:8761` — treating `localhost` as a logical service name, finding no such service, and failing to register. That is why we define **two** builders: a plain one that infrastructure picks up by default, and a `@LoadBalanced` one marked `defaultCandidate = false` so it is injected *only* where we explicitly request it with the `@LoadBalanced` qualifier.
 
 **The controller:**
 
@@ -377,18 +389,24 @@ This is the essence of microservices: independent applications communicating ove
 
 In the calculator example, the client calls the facade service directly. In a real system with dozens of services, exposing each service's URL to clients is impractical. An **API Gateway** provides a single entry point that routes requests to the correct backend service.
 
-Spring Cloud Gateway handles routing, load balancing, authentication, rate limiting, and request transformation:
+Spring Cloud Gateway handles routing, load balancing, authentication, rate limiting, and request transformation. As of Gateway 5.0 (the version in Spring Cloud 2025.1) the old `spring-cloud-starter-gateway` artifact has been split into two variants — a reactive one (`-webflux`) and a servlet one (`-webmvc`). We use the reactive variant, which is the classic Spring Cloud Gateway:
 
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-gateway</artifactId>
+    <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
 </dependency>
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 </dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+</dependency>
 ```
+
+The same split applies to the configuration keys: routes now live under `spring.cloud.gateway.server.webflux` (for the webmvc variant it would be `spring.cloud.gateway.server.webmvc`):
 
 ```yaml
 server:
@@ -397,16 +415,23 @@ server:
 spring:
   cloud:
     gateway:
-      routes:
-        - id: calculator-service
-          uri: lb://calculator-service
-          predicates:
-            - Path=/math/**
+      server:
+        webflux:
+          routes:
+            - id: calculator-service
+              uri: lb://calculator-service
+              predicates:
+                - Path=/math/**
 
-        - id: math-facade-service
-          uri: lb://math-facade-service
-          predicates:
-            - Path=/api/**
+            - id: math-facade-service
+              uri: lb://math-facade-service
+              predicates:
+                - Path=/api/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
 ```
 
 The `lb://` prefix tells the gateway to use Eureka for service discovery and load balance across instances. Clients now send all requests to `http://localhost:8080` — the gateway routes `/math/**` requests to the calculator service and `/api/**` requests to the facade service.
@@ -442,17 +467,43 @@ spring:
           default-label: main
 ```
 
-### Config Client
-
-Each service imports its configuration from the config server:
+For local development — or when you simply want to run the example without a Git repository — the Config Server also supports a **native** backend that serves property files straight from the filesystem or classpath. Activate the `native` profile and point it at a folder:
 
 ```yaml
+server:
+  port: 8888
+
 spring:
-  application:
-    name: calculator-service
-  config:
-    import: configserver:http://localhost:8888
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config-repo
 ```
+
+With this configuration, a file `config-repo/calculator-service.properties` containing, say, `calculator.greeting=Hello from the Config Server` is served to any client whose `spring.application.name` is `calculator-service`.
+
+### Config Client
+
+A client needs the config-client starter on its classpath:
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-config</artifactId>
+</dependency>
+```
+
+Each service then imports its configuration from the config server:
+
+```properties
+spring.application.name=calculator-service
+spring.config.import=optional:configserver:http://localhost:8888
+```
+
+The `optional:` prefix lets the service start even if the config server is briefly unavailable; drop it if you want startup to fail fast when configuration cannot be loaded.
 
 The Config Server serves a file named `calculator-service.yml` from the Git repository. When the configuration changes, services can refresh without restarting. This keeps all environment-specific values in one place, version-controlled, and auditable — the same benefits we discussed for property files in Chapter 5, but centralized across an entire system.
 
@@ -468,6 +519,14 @@ The circuit breaker has three states: **closed** (normal — requests pass throu
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+</dependency>
+<!-- The @CircuitBreaker annotation is applied with Spring AOP, which needs the
+     AspectJ weaver. Spring Boot 4 no longer ships spring-boot-starter-aop, so
+     add the weaver directly (its version is managed by the Boot BOM). Without
+     it, the annotation is silently ignored and the fallback never runs. -->
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
 </dependency>
 ```
 
