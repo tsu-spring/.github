@@ -181,7 +181,7 @@ Before starting this course, students should be comfortable with:
   - Circuit breakers and resilience (Resilience4j)
 - _Note: This week focuses on concepts and a live demo rather than a full hands-on project._
 
-### Week 14: Deploying Spring Boot Applications
+### [Week 14: Deploying Spring Boot Applications](https://github.com/tsu-spring/.github/blob/master/profile/chapter-14-deploying-spring-boot-applications.md)
 - Packaging as JAR vs. WAR: differences and use cases
 - Building executable JARs with Maven/Gradle
 - Introduction to Docker: writing a `Dockerfile` for Spring Boot
